@@ -1,0 +1,532 @@
+{% macro render_broker_class(broker) %}
+{%- if classname(broker) == 'AMQPBroker' -%}
+class {{ broker.name | capitalize }}Broker(MessageBroker):
+    """AMQP broker implementation."""
+    
+    def __init__(self) -> None:
+        self.name = "{{ broker.name }}"
+        self.host = "{{ broker.host }}"
+        self.port = {{ broker.port }}
+        self.vhost = "{{ broker.vhost }}"
+        self.topic_exchange = "{{ broker.topicExchange }}"
+        self.rpc_exchange = "{{ broker.rpcExchange }}"
+        self.ssl = {{ broker.ssl }}
+        {% if broker.auth %}self.auth = {{ render_auth_instantiation(broker.auth) }}
+        {%- else %}self.auth = None
+        {%- endif %}
+    
+    def connect(self) -> None:
+        """Establish AMQP connection."""
+        # Connection logic would go here
+        pass
+    
+    def disconnect(self) -> None:
+        """Close AMQP connection."""
+        # Disconnection logic would go here
+        pass
+{%- elif classname(broker) == 'MQTTBroker' -%}
+class {{ broker.name | capitalize }}Broker(MessageBroker):
+    """MQTT broker implementation."""
+    
+    def __init__(self) -> None:
+        self.name = "{{ broker.name }}"
+        self.host = "{{ broker.host }}"
+        self.port = {{ broker.port }}
+        self.ssl = {{ broker.ssl }}
+        self.base_path = "{{ broker.basePath }}"
+        self.web_path = "{{ broker.webPath }}"
+        self.web_port = {{ broker.webPort }}
+        {% if broker.auth %}self.auth = {{ render_auth_instantiation(broker.auth) }}
+        {%- else %}self.auth = None
+        {%- endif %}
+    
+    def connect(self) -> None:
+        """Establish MQTT connection."""
+        # Connection logic would go here
+        pass
+    
+    def disconnect(self) -> None:
+        """Close MQTT connection."""
+        # Disconnection logic would go here
+        pass
+{%- elif classname(broker) == 'RedisBroker' -%}
+class {{ broker.name | capitalize }}Broker(MessageBroker):
+    """Redis broker implementation."""
+    
+    def __init__(self) -> None:
+        self.name = "{{ broker.name }}"
+        self.host = "{{ broker.host }}"
+        self.port = {{ broker.port }}
+        self.db = {{ broker.db }}
+        self.ssl = {{ broker.ssl }}
+        {% if broker.auth %}self.auth = {{ render_auth_instantiation(broker.auth) }}
+        {%- else %}self.auth = None
+        {%- endif %}
+    
+    def connect(self) -> None:
+        """Establish Redis connection."""
+        # Connection logic would go here
+        pass
+    
+    def disconnect(self) -> None:
+        """Close Redis connection."""
+        # Disconnection logic would go here
+        pass
+{%- endif -%}
+{% endmacro %}
+
+{% macro render_auth_instantiation(auth) %}
+{%- if classname(auth) == 'AuthPlain' -%}
+AuthPlain("{{ auth.username }}", "{{ auth.password }}")
+{%- elif classname(auth) == 'AuthApiKey' -%}
+AuthApiKey("{{ auth.key }}")
+{%- elif classname(auth) == 'AuthCert' -%}
+AuthCert("{{ auth.cert }}", "{{ auth.certPath }}")
+{%- endif -%}
+{% endmacro %}
+
+{% macro render_auth_class(auth) %}
+{%- if classname(auth) == 'AuthPlain' -%}
+class AuthPlain(Authentication):
+    """Plain username/password authentication."""
+    
+    def __init__(self, username: str, password: str) -> None:
+        self.username = username
+        self.password = password
+    
+    def get_credentials(self) -> Dict[str, Any]:
+        """Return username and password credentials."""
+        return {
+            "username": self.username,
+            "password": self.password
+        }
+{%- elif classname(auth) == 'AuthApiKey' -%}
+class AuthApiKey(Authentication):
+    """API key authentication."""
+    
+    def __init__(self, key: str) -> None:
+        self.key = key
+    
+    def get_credentials(self) -> Dict[str, Any]:
+        """Return API key credentials."""
+        return {
+            "api_key": self.key
+        }
+{%- elif classname(auth) == 'AuthCert' -%}
+class AuthCert(Authentication):
+    """Certificate-based authentication."""
+    
+    def __init__(self, cert: str, cert_path: str) -> None:
+        self.cert = cert
+        self.cert_path = cert_path
+    
+    def get_credentials(self) -> Dict[str, Any]:
+        """Return certificate credentials."""
+        return {
+            "cert": self.cert,
+            "cert_path": self.cert_path
+        }
+{%- endif -%}
+{% endmacro %}
+
+{% macro render_generator_class(generator) %}
+{%- if classname(generator) == 'ConstantGenerator' -%}
+class ConstantGenerator(ValueGenerator):
+    """Generator that returns a constant value."""
+    
+    def __init__(self, value: float) -> None:
+        self.value = value
+    
+    def generate(self) -> float:
+        """Return the constant value."""
+        return self.value
+{%- elif classname(generator) == 'LinearGenerator' -%}
+class LinearGenerator(ValueGenerator):
+    """Generator that produces linearly increasing values."""
+    
+    def __init__(self, start: float, step: float) -> None:
+        self.start = start
+        self.step = step
+        self.current = start
+    
+    def generate(self) -> float:
+        """Return the next value in the linear sequence."""
+        value = self.current
+        self.current += self.step
+        return value
+{%- elif classname(generator) == 'GaussianGenerator' -%}
+class GaussianGenerator(ValueGenerator):
+    """Generator that produces values with Gaussian distribution."""
+    
+    def __init__(self, value: float, max_value: float, sigma: float) -> None:
+        self.value = value
+        self.max_value = max_value
+        self.sigma = sigma
+    
+    def generate(self) -> float:
+        """Return a value sampled from Gaussian distribution."""
+        result = random.gauss(self.value, self.sigma)
+        return min(result, self.max_value)
+{%- elif classname(generator) == 'SinusGenerator' -%}
+class SinusGenerator(ValueGenerator):
+    """Generator that produces sinusoidal values."""
+    
+    def __init__(self, dc: float, amplitude: float, step: float) -> None:
+        self.dc = dc
+        self.amplitude = amplitude
+        self.step = step
+        self.phase = 0.0
+    
+    def generate(self) -> float:
+        """Return the next value in the sinusoidal sequence."""
+        value = self.dc + self.amplitude * math.sin(self.phase)
+        self.phase += self.step
+        return value
+{%- elif classname(generator) == 'SawtoothGenerator' -%}
+class SawtoothGenerator(ValueGenerator):
+    """Generator that produces sawtooth wave values."""
+    
+    def __init__(self, min_val: float, max_val: float, step: float) -> None:
+        self.min_val = min_val
+        self.max_val = max_val
+        self.step = step
+        self.current = min_val
+    
+    def generate(self) -> float:
+        """Return the next value in the sawtooth sequence."""
+        value = self.current
+        self.current += self.step
+        if self.current > self.max_val:
+            self.current = self.min_val
+        return value
+{%- elif classname(generator) == 'ReplayGenerator' -%}
+class ReplayGenerator(ValueGenerator):
+    """Generator that replays values from a list or file."""
+    
+    def __init__(self, values: Optional[List[Any]] = None, filepath: Optional[str] = None, times: int = 1) -> None:
+        self.times = times
+        self.current_iteration = 0
+        self.current_index = 0
+        
+        if filepath:
+            # Load values from file
+            with open(filepath, 'r') as f:
+                import json
+                self.values = json.load(f)
+        elif values:
+            self.values = values
+        else:
+            self.values = []
+    
+    def generate(self) -> Any:
+        """Return the next value from the replay sequence."""
+        if not self.values:
+            return None
+        
+        if self.current_iteration >= self.times and self.times > 0:
+            # Replay completed, return last value
+            return self.values[-1]
+        
+        value = self.values[self.current_index]
+        self.current_index += 1
+        
+        if self.current_index >= len(self.values):
+            self.current_index = 0
+            self.current_iteration += 1
+        
+        return value
+{%- endif -%}
+{% endmacro %}
+
+{% macro render_noise_class(noise) %}
+{%- if classname(noise) == 'UniformNoise' -%}
+class UniformNoise(NoiseDefinition):
+    """Noise generator with uniform distribution."""
+    
+    def __init__(self, min_val: float, max_val: float) -> None:
+        self.min_val = min_val
+        self.max_val = max_val
+    
+    def apply(self, value: float) -> float:
+        """Apply uniform noise to the given value."""
+        noise = random.uniform(self.min_val, self.max_val)
+        return value + noise
+{%- elif classname(noise) == 'GaussianNoise' -%}
+class GaussianNoise(NoiseDefinition):
+    """Noise generator with Gaussian distribution."""
+    
+    def __init__(self, mu: float, sigma: float) -> None:
+        self.mu = mu
+        self.sigma = sigma
+    
+    def apply(self, value: float) -> float:
+        """Apply Gaussian noise to the given value."""
+        noise = random.gauss(self.mu, self.sigma)
+        return value + noise
+{%- endif -%}
+{% endmacro %}
+
+{% import 'helpers.jinja2' as helpers %}
+
+{% macro render_entity_class(entity) %}
+class {{ entity.name | capitalize }}:
+    """{{ entity.type | capitalize }} entity: {{ entity.name }}{% if entity.description %} - {{ entity.description }}{% endif %}"""
+    
+    def __init__(self) -> None:
+        self.name = "{{ entity.name }}"
+        self.entity_type = "{{ entity.type }}"
+        self.topic = "{{ entity.topic }}"
+        self.freq = {{ entity.freq }}
+        self.broker_name = "{{ entity.broker.name }}"
+        
+        # Initialize attributes
+        {%- for attr in entity.attributes %}
+        {{ render_attribute_definition(attr) | indent(8) }}
+        {%- endfor %}
+        {% if not entity.attributes %}pass
+        {% endif %}
+{% endmacro %}
+
+{% macro render_attribute_definition(attr) %}
+{%- if classname(attr) == 'SimpleAttribute' -%}
+self.{{ attr.name }}: {{ helpers.python_type(attr.type) }} = {{ helpers.render_attribute_value(attr.default) }}
+{%- elif classname(attr) == 'AttributeWithGenerator' -%}
+self.{{ attr.name }}_generator = {{ render_generator_instantiation(attr.generator, attr.noise) }}
+self.{{ attr.name }}: {{ helpers.python_type(attr.type) }} = self.{{ attr.name }}_generator.generate()
+{%- endif -%}
+{% endmacro %}
+
+{% macro render_generator_instantiation(generator, noise) %}
+{%- if noise -%}
+{%- if classname(noise) == 'UniformNoise' -%}
+NoiseWrapper({{ render_generator_base(generator) }}, UniformNoise({{ noise.min }}, {{ noise.max }}))
+{%- elif classname(noise) == 'GaussianNoise' -%}
+NoiseWrapper({{ render_generator_base(generator) }}, GaussianNoise({{ noise.mu }}, {{ noise.sigma }}))
+{%- endif -%}
+{%- else -%}
+{{ render_generator_base(generator) }}
+{%- endif -%}
+{% endmacro %}
+
+{% macro render_generator_base(generator) %}
+{%- if classname(generator) == 'ConstantGenerator' -%}
+ConstantGenerator({{ generator.value }})
+{%- elif classname(generator) == 'LinearGenerator' -%}
+LinearGenerator({{ generator.start }}, {{ generator.step }})
+{%- elif classname(generator) == 'GaussianGenerator' -%}
+GaussianGenerator({{ generator.value }}, {{ generator.maxValue }}, {{ generator.sigma }})
+{%- elif classname(generator) == 'SinusGenerator' -%}
+SinusGenerator({{ generator.dc }}, {{ generator.amplitude }}, {{ generator.step }})
+{%- elif classname(generator) == 'SawtoothGenerator' -%}
+SawtoothGenerator({{ generator.min }}, {{ generator.max }}, {{ generator.step }})
+{%- elif classname(generator) == 'ReplayGenerator' -%}
+{%- if generator.filepath -%}
+ReplayGenerator(filepath="{{ generator.filepath }}", times={{ generator.times }})
+{%- elif generator.values -%}
+ReplayGenerator(values={{ helpers.render_attribute_value(generator.values) }}, times={{ generator.times }})
+{%- else -%}
+ReplayGenerator(times={{ generator.times }})
+{%- endif -%}
+{%- endif -%}
+{% endmacro %}
+
+{% macro render_numeric_function(func) %}
+{%- if classname(func) == 'StandardDeviation' -%}
+StandardDeviation("{{ func.attribute.name }}", {{ func.size }})
+{%- elif classname(func) == 'Variance' -%}
+Variance("{{ func.attribute.name }}", {{ func.size }})
+{%- elif classname(func) == 'Mean' -%}
+Mean("{{ func.attribute.name }}", {{ func.size }})
+{%- elif classname(func) == 'Minimum' -%}
+Minimum("{{ func.attribute.name }}", {{ func.size }})
+{%- elif classname(func) == 'Maximum' -%}
+Maximum("{{ func.attribute.name }}", {{ func.size }})
+{%- elif classname(func) == 'Multiplication' -%}
+Multiplication([{% for attr in func.attributes %}"{{ attr.name }}"{% if not loop.last %}, {% endif %}{% endfor %}])
+{%- endif -%}
+{% endmacro %}
+
+{% macro render_condition_class(condition) %}
+{%- if condition.operator | length > 0 -%}
+ConditionExpression({{ render_condition_term(condition.left) }}{% for i in range(condition.operator | length) %}, "{{ helpers.render_logical_operator(condition.operator[i]) }}", {{ render_condition_term(condition.right[i]) }}{% endfor %})
+{%- else -%}
+{{ render_condition_term(condition.left) }}
+{%- endif -%}
+{% endmacro %}
+
+{% macro render_condition_term(term) %}
+{%- if term.condition -%}
+{{ render_condition_class(term.condition) }}
+{%- else -%}
+NumericCondition(MathExpression(MathTerm(1)), "==", MathExpression(MathTerm(1)))
+{%- endif -%}
+{% endmacro %}
+
+{% macro render_primitive_condition(cond) %}
+{%- if classname(cond) == 'NumericCondition' -%}
+NumericCondition({{ render_math_expression(cond.left) }}, "{{ helpers.render_operator(cond.operator) }}", {{ render_math_expression(cond.right) }})
+{%- elif classname(cond) == 'StringCondition' -%}
+StringCondition({{ helpers.render_attribute_reference(cond.left) }}, "{{ helpers.render_operator(cond.operator) }}", "{{ cond.right }}")
+{%- elif classname(cond) == 'BooleanCondition' -%}
+BooleanCondition({{ helpers.render_attribute_reference(cond.left) }}, "{{ helpers.render_operator(cond.operator) }}", {{ cond.right }})
+{%- elif classname(cond) == 'ListCondition' -%}
+ListCondition({{ helpers.render_attribute_reference(cond.left) }}, "{{ helpers.render_operator(cond.operator) }}", {{ helpers.render_attribute_value(cond.right) }})
+{%- elif classname(cond) == 'DictionaryCondition' -%}
+DictionaryCondition({{ helpers.render_attribute_reference(cond.left) }}, "{{ helpers.render_operator(cond.operator) }}", {{ helpers.render_attribute_value(cond.right) }})
+{%- elif classname(cond) == 'TimeCondition' -%}
+TimeCondition({{ helpers.render_attribute_reference(cond.left) }}, "{{ helpers.render_operator(cond.operator) }}", {{ helpers.render_attribute_value(cond.right) }})
+{%- elif classname(cond) == 'RangeCondition' -%}
+RangeCondition({{ helpers.render_attribute_reference(cond.value) }}, {{ cond.min }}, {{ cond.max }})
+{%- endif -%}
+{% endmacro %}
+
+{% macro render_math_expression(expr) %}
+MathExpression({{ render_math_term(expr.left) }}{% for i in range(expr.operator | length) %}, "{{ helpers.render_operator(expr.operator[i]) }}", {{ render_math_term(expr.right[i]) }}{% endfor %})
+{% endmacro %}
+
+{% macro render_math_term(term) %}
+MathTerm({{ render_math_factor(term.left) }}{% for i in range(term.operator | length) %}, "{{ helpers.render_operator(term.operator[i]) }}", {{ render_math_factor(term.right[i]) }}{% endfor %})
+{% endmacro %}
+
+{% macro render_math_factor(factor) %}
+{%- if factor is number -%}
+{{ factor }}
+{%- elif classname(factor) == 'SimpleAttributeReference' or classname(factor) == 'ListAttributeReference' or classname(factor) == 'DictAttributeReference' -%}
+{{ helpers.render_attribute_reference(factor) }}
+{%- elif classname(factor) in ['StandardDeviation', 'Variance', 'Mean', 'Minimum', 'Maximum', 'Multiplication'] -%}
+{{ render_numeric_function(factor) }}
+{%- elif classname(factor) == 'MathExpression' -%}
+{{ render_math_expression(factor.expr) }}
+{%- endif -%}
+{% endmacro %}
+
+{% macro render_action_class(action) %}
+{%- if classname(action) == 'IntAction' -%}
+IntAction("{{ action.entity.name }}", "{{ action.attribute.name }}", {{ action.value }})
+{%- elif classname(action) == 'FloatAction' -%}
+FloatAction("{{ action.entity.name }}", "{{ action.attribute.name }}", {{ action.value }})
+{%- elif classname(action) == 'BoolAction' -%}
+BoolAction("{{ action.entity.name }}", "{{ action.attribute.name }}", {{ action.value }})
+{%- elif classname(action) == 'StringAction' -%}
+StringAction("{{ action.entity.name }}", "{{ action.attribute.name }}", "{{ action.value }}")
+{%- elif classname(action) == 'ListAction' -%}
+ListAction("{{ action.entity.name }}", "{{ action.attribute.name }}", {{ helpers.render_attribute_value(action.value) }})
+{%- elif classname(action) == 'DictAction' -%}
+DictAction("{{ action.entity.name }}", "{{ action.attribute.name }}", {{ helpers.render_attribute_value(action.value) }})
+{%- endif -%}
+{% endmacro %}
+
+{% macro render_automation_class(automation) %}
+class {{ automation.name | capitalize }}Automation:
+    """Automation: {{ automation.name }}{% if automation.description %} - {{ automation.description }}{% endif %}"""
+    
+    def __init__(self) -> None:
+        self.name = "{{ automation.name }}"
+        self.freq = {{ automation.freq }}
+        self.enabled = {{ automation.enabled }}
+        self.continuous = {{ automation.continuous }}
+        self.check_once = {{ automation.checkOnce }}
+        self.delay = {{ automation.delay }}
+        self.has_triggered = False
+        self.last_check_time = 0.0
+        
+        # Condition
+        self.condition = {{ render_condition_class(automation.condition) }}
+        
+        # Actions
+        self.actions = [
+            {%- for action in automation.actions %}
+            {{ render_action_class(action) }}{% if not loop.last %},{% endif %}
+            {%- endfor %}
+        ]
+        
+        # Orchestration references (automation names)
+        self.starts = [{% for auto in automation.starts %}"{{ auto.name }}"{% if not loop.last %}, {% endif %}{% endfor %}]
+        self.stops = [{% for auto in automation.stops %}"{{ auto.name }}"{% if not loop.last %}, {% endif %}{% endfor %}]
+        self.after = [{% for auto in automation.after %}"{{ auto.name }}"{% if not loop.last %}, {% endif %}{% endfor %}]
+    
+    def check_and_execute(self, entity_registry: Dict[str, Any], automation_registry: Dict[str, Any], current_time: float) -> bool:
+        """Check condition and execute actions if triggered."""
+        # Check if automation is enabled
+        if not self.enabled:
+            return False
+        
+        # Check if already triggered and checkOnce is set
+        if self.check_once and self.has_triggered:
+            return False
+        
+        # Check frequency constraint
+        if self.freq > 0 and (current_time - self.last_check_time) < (1.0 / self.freq):
+            return False
+        
+        self.last_check_time = current_time
+        
+        # Check after dependencies
+        for after_name in self.after:
+            after_auto = automation_registry.get(after_name)
+            if after_auto and not after_auto.has_triggered:
+                return False
+        
+        # Evaluate condition
+        try:
+            condition_met = self.condition.evaluate(entity_registry)
+        except Exception:
+            condition_met = False
+        
+        if condition_met:
+            # Apply delay if specified
+            if self.delay > 0:
+                import time
+                time.sleep(self.delay)
+            
+            # Execute actions
+            for action in self.actions:
+                try:
+                    action.execute(entity_registry)
+                except Exception:
+                    pass
+            
+            # Mark as triggered
+            self.has_triggered = True
+            
+            # Handle starts orchestration
+            for start_name in self.starts:
+                start_auto = automation_registry.get(start_name)
+                if start_auto:
+                    start_auto.enabled = True
+            
+            # Handle stops orchestration
+            for stop_name in self.stops:
+                stop_auto = automation_registry.get(stop_name)
+                if stop_auto:
+                    stop_auto.enabled = False
+            
+            # Reset has_triggered if continuous
+            if self.continuous:
+                self.has_triggered = False
+            
+            return True
+        
+        return False
+{% endmacro %}
+
+{% macro render_rtmonitor_class(rtmonitor) %}
+class RTMonitor:
+    """Runtime monitoring system."""
+    
+    def __init__(self) -> None:
+        self.broker_name = "{{ rtmonitor.broker.name }}"
+        self.namespace = "{{ rtmonitor.namespace }}"
+        self.event_topic = "{{ rtmonitor.eventTopic }}"
+        self.logs_topic = "{{ rtmonitor.logsTopic }}"
+    
+    def log_event(self, event: str) -> None:
+        """Log an event to the event topic."""
+        # Event logging logic would go here
+        pass
+    
+    def log_message(self, message: str) -> None:
+        """Log a message to the logs topic."""
+        # Message logging logic would go here
+        pass
+{% endmacro %}

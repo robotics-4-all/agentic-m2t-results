@@ -1,0 +1,9 @@
+// Floating point numbers and unary operators
+calc 3.14 * 2
+calc -5 + 10
+calc +15 - 3
+calc -(10 + 5)
+
+var pi = 3.14159
+var radius = 5.0
+calc pi * radius * radius

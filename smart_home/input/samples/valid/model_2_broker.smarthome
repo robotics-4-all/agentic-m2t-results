@@ -1,0 +1,10 @@
+Metadata
+    name: BrokerSetup
+    version: "1.0"
+    author: "Alice"
+end
+
+Broker<MQTT> homeBroker
+    host: "localhost"
+    port: 1883
+end

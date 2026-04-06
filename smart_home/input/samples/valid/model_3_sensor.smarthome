@@ -1,0 +1,19 @@
+Metadata
+    name: SensorHome
+    version: "1.0"
+end
+
+Broker<MQTT> mqttBroker
+    host: "192.168.1.10"
+    port: 1883
+end
+
+Entity tempSensor
+    type: sensor
+    topic: "home/bedroom/temperature"
+    broker: mqttBroker
+    freq: 10
+    attributes:
+        - temperature : float
+        - humidity : float
+end

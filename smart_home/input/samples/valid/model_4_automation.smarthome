@@ -1,0 +1,33 @@
+Metadata
+    name: SimpleAutomation
+    version: "1.0"
+end
+
+Broker<MQTT> mqttBroker
+    host: "localhost"
+    port: 1883
+end
+
+Entity thermostat
+    type: sensor
+    topic: "home/thermostat"
+    broker: mqttBroker
+    attributes:
+        - temperature : float
+end
+
+Entity heater
+    type: actuator
+    topic: "home/heater"
+    broker: mqttBroker
+    attributes:
+        - power : bool
+end
+
+Automation turnOnHeater
+    condition:
+        thermostat.temperature < 18.0
+    actions:
+        - heater.power : true
+    enabled: true
+end

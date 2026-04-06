@@ -1,0 +1,85 @@
+{
+  "timestamp": "20260327_141123",
+  "success": true,
+  "grammar": "calculator",
+  "templates_generated": 2,
+  "validation_errors": 0,
+  "refinement_count": 2,
+  "notes": [],
+  "fixes": [
+    "Added import statement '{% from 'macros.jinja2' import render_statement -%}' at the beginning of main.jinja2 to make the render_statement macro available",
+    "Replaced hardcoded 'expr' literal in render_assignment with render_expression(assign.expression)",
+    "Replaced hardcoded 'expr' literal in render_calculation with render_expression(calc.expression)",
+    "Added render_expression macro to handle Expression objects with paired-list pattern",
+    "Added render_term macro to handle Term objects with paired-list pattern",
+    "Added render_factor macro to dispatch to correct factor type (Number, Variable, Expression, UnaryOp)",
+    "Added render_number macro to output Number.value",
+    "Added render_variable macro to output variables['name'] lookup",
+    "Added render_unaryop macro to handle UnaryOp with op and value"
+  ],
+  "tests": {
+    "samples_covered": 4,
+    "total_test_functions": 34,
+    "per_sample": {
+      "example1": {
+        "test_count": 8,
+        "validation_status": "valid",
+        "concepts_tested": [
+          "addition operator",
+          "subtraction operator",
+          "multiplication operator",
+          "division operator",
+          "modulo operator",
+          "calculation statement",
+          "numeric literals",
+          "sequential execution"
+        ]
+      },
+      "example2": {
+        "test_count": 9,
+        "validation_status": "valid",
+        "concepts_tested": [
+          "variable assignment",
+          "variable reference",
+          "addition operator",
+          "multiplication operator",
+          "subtraction operator",
+          "operator precedence",
+          "calculation statement",
+          "sequential execution",
+          "complete program"
+        ]
+      },
+      "example3": {
+        "test_count": 8,
+        "validation_status": "valid",
+        "concepts_tested": [
+          "parenthesized expressions",
+          "operator precedence override",
+          "nested parentheses",
+          "variable assignment with expressions",
+          "variable reference in calculations",
+          "division with parenthesized denominator",
+          "calculation output",
+          "variable storage mechanism"
+        ]
+      },
+      "example4": {
+        "test_count": 9,
+        "validation_status": "valid",
+        "concepts_tested": [
+          "floating-point multiplication",
+          "unary minus operator",
+          "unary plus operator",
+          "unary operator on parenthesized expression",
+          "variable assignment with floats",
+          "multiple variable assignments",
+          "variable references in expressions",
+          "chained multiplication (paired-list pattern)",
+          "sequential statement execution"
+        ]
+      }
+    }
+  },
+  "dockerfiles_generated": 4
+}

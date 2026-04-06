@@ -1,0 +1,143 @@
+{% macro render_attribute_value(value) %}
+{%- if value is none -%}
+None
+{%- elif value is number -%}
+{{ value }}
+{%- elif value is string -%}
+"{{ value }}"
+{%- elif value is sameas true or value is sameas false -%}
+{{ value }}
+{%- elif classname(value) == 'TimeValue' -%}
+time({{ value.hour }}, {{ value.minute }}, {{ value.second }})
+{%- elif classname(value) == 'Date' -%}
+datetime({{ value.year }}, {{ value.month }}, {{ value.day }})
+{%- elif classname(value) == 'List' -%}
+[{% for item in value.items %}{{ render_list_item(item) }}{% if not loop.last %}, {% endif %}{% endfor %}]
+{%- elif classname(value) == 'Dict' -%}
+{ {% for item in value.items %}"{{ item.name }}": {{ render_dict_value(item.value) }}{% if not loop.last %}, {% endif %}{% endfor %} }
+{%- else -%}
+{{ value }}
+{%- endif -%}
+{% endmacro %}
+
+{% macro render_list_item(item) %}
+{%- if item is number -%}
+{{ item }}
+{%- elif item is string -%}
+"{{ item }}"
+{%- elif item is sameas true or item is sameas false -%}
+{{ item }}
+{%- elif classname(item) == 'TimeValue' -%}
+time({{ item.hour }}, {{ item.minute }}, {{ item.second }})
+{%- elif classname(item) == 'Date' -%}
+datetime({{ item.year }}, {{ item.month }}, {{ item.day }})
+{%- elif classname(item) == 'List' -%}
+[{% for subitem in item.items %}{{ render_list_item(subitem) }}{% if not loop.last %}, {% endif %}{% endfor %}]
+{%- elif classname(item) == 'Dict' -%}
+{ {% for dictitem in item.items %}"{{ dictitem.name }}": {{ render_dict_value(dictitem.value) }}{% if not loop.last %}, {% endif %}{% endfor %} }
+{%- else -%}
+{{ item }}
+{%- endif -%}
+{% endmacro %}
+
+{% macro render_dict_value(value) %}
+{%- if value is number -%}
+{{ value }}
+{%- elif value is string -%}
+"{{ value }}"
+{%- elif value is sameas true or value is sameas false -%}
+{{ value }}
+{%- elif classname(value) == 'TimeValue' -%}
+time({{ value.hour }}, {{ value.minute }}, {{ value.second }})
+{%- elif classname(value) == 'Date' -%}
+datetime({{ value.year }}, {{ value.month }}, {{ value.day }})
+{%- elif classname(value) == 'List' -%}
+[{% for item in value.items %}{{ render_list_item(item) }}{% if not loop.last %}, {% endif %}{% endfor %}]
+{%- elif classname(value) == 'Dict' -%}
+{ {% for item in value.items %}"{{ item.name }}": {{ render_dict_value(item.value) }}{% if not loop.last %}, {% endif %}{% endfor %} }
+{%- else -%}
+{{ value }}
+{%- endif -%}
+{% endmacro %}
+
+{% macro python_type(attr_type) %}
+{%- if attr_type == 'int' -%}
+int
+{%- elif attr_type == 'float' -%}
+float
+{%- elif attr_type == 'str' or attr_type == 'string' -%}
+str
+{%- elif attr_type == 'bool' -%}
+bool
+{%- elif attr_type == 'list' -%}
+List[Any]
+{%- elif attr_type == 'dict' -%}
+Dict[str, Any]
+{%- elif attr_type == 'time' -%}
+time
+{%- else -%}
+Any
+{%- endif -%}
+{% endmacro %}
+
+{% macro render_attribute_reference(ref) %}
+{%- if classname(ref) == 'SimpleAttributeReference' -%}
+SimpleAttributeReference("{{ ref.entity.name }}", "{{ ref.attribute.name }}")
+{%- elif classname(ref) == 'ListAttributeReference' -%}
+ListAttributeReference("{{ ref.entity.name }}", "{{ ref.attribute.name }}", {{ ref.index }})
+{%- elif classname(ref) == 'DictAttributeReference' -%}
+DictAttributeReference("{{ ref.entity.name }}", "{{ ref.attribute.name }}", "{{ ref.key }}")
+{%- endif -%}
+{% endmacro %}
+
+{% macro render_operator(operator) %}
+{%- if operator == '==' -%}
+==
+{%- elif operator == '!=' -%}
+!=
+{%- elif operator == '<' -%}
+<
+{%- elif operator == '>' -%}
+>
+{%- elif operator == '<=' -%}
+<=
+{%- elif operator == '>=' -%}
+>=
+{%- elif operator == '+' -%}
++
+{%- elif operator == '-' -%}
+-
+{%- elif operator == '*' -%}
+*
+{%- elif operator == '/' -%}
+/
+{%- elif operator == 'contains' -%}
+contains
+{%- elif operator == 'startswith' -%}
+startswith
+{%- elif operator == 'endswith' -%}
+endswith
+{%- elif operator == 'in' -%}
+in
+{%- elif operator == 'hasKey' -%}
+hasKey
+{%- elif operator == 'before' -%}
+<
+{%- elif operator == 'after' -%}
+>
+{%- else -%}
+{{ operator }}
+{%- endif -%}
+{% endmacro %}
+
+{% macro render_logical_operator(operator) %}
+{%- if operator == 'AND' -%}
+and
+{%- elif operator == 'OR' -%}
+or
+{%- elif operator == 'NOT' -%}
+not
+{%- else -%}
+{{ operator }}
+{%- endif -%}
+{% endmacro %}

@@ -1,0 +1,51 @@
+Metadata
+    name: GeneratorDemo
+    version: "1.0"
+    description: "Entities with value generators and noise"
+end
+
+Broker<MQTT> mqttBroker
+    host: "localhost"
+    port: 1883
+end
+
+Entity weatherStation
+    type: sensor
+    topic: "outdoor/weather"
+    broker: mqttBroker
+    freq: 30
+    attributes:
+        - temperature : float -> gaussian(22.0, 40.0, 3.0) with noise uniform(-0.5, 0.5)
+        - pressure : float -> sinus(1013.0, 5.0, 0.1)
+        - wind_speed : float -> saw(0.0, 25.0, 0.5)
+end
+
+Entity lightSensor
+    type: sensor
+    topic: "outdoor/light"
+    broker: mqttBroker
+    freq: 5
+    attributes:
+        - lux : int -> linear(0, 10)
+        - is_dark : bool
+end
+
+Entity hvac
+    type: actuator
+    topic: "home/hvac"
+    broker: mqttBroker
+    attributes:
+        - target_temp : int = 21
+        - mode : str = "auto"
+        - fan_speed : int = 2
+end
+
+Automation coolDown
+    condition:
+        weatherStation.temperature > 30.0
+    actions:
+        - hvac.target_temp : 20
+        - hvac.fan_speed : 3
+    enabled: true
+    continuous: true
+end

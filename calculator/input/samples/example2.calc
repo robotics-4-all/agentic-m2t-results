@@ -1,0 +1,5 @@
+// Variables and expressions
+var x = 10
+var y = 20
+calc x + y
+calc x * y - 50

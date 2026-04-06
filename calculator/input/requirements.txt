@@ -1,0 +1,17 @@
+Create a simple calculator DSL for performing arithmetic calculations with variable support.
+
+DSL Requirements:
+- Allow users to perform basic arithmetic calculations (+, -, *, /, %)
+- Support both integer and floating-point numbers
+- Enable variable declarations and assignments for storing intermediate results
+- Support parentheses for controlling operation precedence
+- Support unary operators (positive and negative signs)
+- Follow standard mathematical operator precedence (multiplication/division before addition/subtraction)
+- Allow users to reference previously defined variables in calculations
+- Support single-line comments using //
+- Provide clear syntax for distinguishing between variable assignments and calculations
+- Enable writing calculation scripts with multiple statements
+
+Target Usage:
+Users should be able to write calculator programs that can be evaluated to produce numeric results.
+The DSL is intended for educational purposes and simple arithmetic scripting.

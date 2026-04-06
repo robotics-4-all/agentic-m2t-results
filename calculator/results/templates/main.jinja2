@@ -1,0 +1,6 @@
+{% from 'macros.jinja2' import render_statement -%}
+variables = {}
+
+{%- for stmt in model.statements %}
+{{ render_statement(stmt) }}
+{%- endfor %}

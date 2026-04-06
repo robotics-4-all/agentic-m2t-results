@@ -1,0 +1,80 @@
+Metadata
+    name: ComplexConditions
+    version: "2.0"
+    author: "Charlie"
+    description: "Complex conditions, math expressions, chained automations"
+end
+
+Broker<MQTT> mqttBroker
+    host: "localhost"
+    port: 1883
+    ssl: false
+end
+
+Entity tempSensor
+    type: sensor
+    topic: "home/living/temp"
+    broker: mqttBroker
+    freq: 10
+    attributes:
+        - temperature : float -> gaussian(22.0, 35.0, 2.0)
+        - humidity : float -> gaussian(50.0, 100.0, 5.0)
+end
+
+Entity motionSensor
+    type: sensor
+    topic: "home/living/motion"
+    broker: mqttBroker
+    attributes:
+        - detected : bool
+end
+
+Entity ac
+    type: actuator
+    topic: "home/living/ac"
+    broker: mqttBroker
+    attributes:
+        - power : bool
+        - target_temp : int
+end
+
+Entity lights
+    type: actuator
+    topic: "home/living/lights"
+    broker: mqttBroker
+    attributes:
+        - brightness : int
+end
+
+Automation comfortControl
+    condition:
+        tempSensor.temperature > 26.0 AND tempSensor.humidity > 60.0
+    actions:
+        - ac.power : true
+        - ac.target_temp : 22
+    enabled: true
+    continuous: true
+    description: "Turn on AC when hot and humid"
+end
+
+Automation motionLights
+    condition:
+        motionSensor.detected is true
+    actions:
+        - lights.brightness : 100
+    enabled: true
+    description: "Lights on when motion detected"
+end
+
+Automation nightMode
+    condition:
+        motionSensor.detected is false AND tempSensor.temperature < 24.0
+    actions:
+        - lights.brightness : 0
+        - ac.power : false
+    enabled: true
+    after:
+        - comfortControl
+        - motionLights
+    description: "Night shutdown after other automations"
+end

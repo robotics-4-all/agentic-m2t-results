@@ -1,0 +1,60 @@
+/*
+ * Calculator DSL Grammar
+ * Defines a simple calculator with variables and expressions
+ */
+
+Program:
+    statements*=Statement
+;
+
+Statement:
+    Assignment | Calculation
+;
+
+Assignment:
+    'var' name=ID '=' expression=Expression
+;
+
+Calculation:
+    'calc' expression=Expression
+;
+
+Expression:
+    Term (op=AddOp right=Term)*
+;
+
+Term:
+    Factor (op=MulOp right=Factor)*
+;
+
+Factor:
+    Number | Variable | '(' Expression ')' | UnaryOp
+;
+
+UnaryOp:
+    op=UnaryOpSymbol value=Factor
+;
+
+UnaryOpSymbol:
+    '-' | '+'
+;
+
+Number:
+    value=FLOAT | value=INT
+;
+
+Variable:
+    name=ID
+;
+
+AddOp:
+    '+' | '-'
+;
+
+MulOp:
+    '*' | '/' | '%'
+;
+
+Comment:
+    /\/\/.*$/
+;

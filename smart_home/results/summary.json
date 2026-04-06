@@ -1,0 +1,154 @@
+{
+  "timestamp": "20260401_115459",
+  "success": true,
+  "grammar": "smartHome",
+  "templates_generated": 3,
+  "validation_errors": 0,
+  "refinement_count": 6,
+  "notes": [
+    "Step 3/6: Value generators and noise still has 1 error(s) after 3 refinements"
+  ],
+  "fixes": [
+    "Removed trailing whitespace stripping operator (-%}) from the import statement on line 1 of main.jinja2 to preserve the newline after the import, preventing the metadata docstring from being fused with subsequent Python code",
+    "Removed trailing dash operator from macro definition on line 2 of main.jinja2 to preserve whitespace inside the docstring",
+    "Removed leading dash operator from endmacro tag on line 19 of main.jinja2 to preserve the blank line in the docstring",
+    "Removed all trailing whitespace stripping operators (-%}) from conditional endif tags inside the render_metadata_docstring macro (lines 9, 12, 15 of main.jinja2)",
+    "Removed leading whitespace stripping operator from the import statement on line 1 of main.jinja2 to preserve proper spacing",
+    "Removed trailing whitespace stripping operator from endmacro tag on line 19 of main.jinja2",
+    "Changed all conditional blocks in the docstring macro to use plain {% %} tags without dashes to preserve natural whitespace structure",
+    "Fixed Jinja2 syntax error in helpers.jinja2 line 17: Changed double curly braces '{{' to single curly brace with space '{ ' to properly render Python dict literal instead of Jinja2 expression tag",
+    "Fixed Jinja2 syntax error in helpers.jinja2 line 37: Changed double curly braces '{{' to single curly brace with space '{ ' for Dict rendering in render_list_item macro",
+    "Fixed Jinja2 syntax error in helpers.jinja2 line 57: Changed double curly braces '{{' to single curly brace with space '{ ' for Dict rendering in render_dict_value macro",
+    "Fixed render_condition_class macro to avoid empty ConditionExpression() calls by checking if operators exist before wrapping in ConditionExpression",
+    "Fixed render_condition_term macro to output a valid placeholder condition (NumericCondition comparing 1 == 1) when ConditionTerm has no nested condition, preventing syntax errors from incomplete condition data",
+    "Added deduplication logic for authentication classes using auth_seen set, mirroring the pattern used for generators and noise classes",
+    "Changed authentication class rendering loop to check classname(broker"
+  ],
+  "tests": {
+    "samples_covered": 8,
+    "total_test_functions": 72,
+    "per_sample": {
+      "model_1_minimal": {
+        "test_count": 7,
+        "validation_status": "valid",
+        "concepts_tested": [
+          "Metadata extraction and module constants",
+          "SmartEnvironment initialization with empty model",
+          "Simulation step execution with no components",
+          "Multi-step simulation run",
+          "Module structure and base classes",
+          "SmartEnvironment public interface",
+          "Required module imports"
+        ]
+      },
+      "model_2_broker": {
+        "test_count": 8,
+        "validation_status": "valid",
+        "concepts_tested": [
+          "Metadata extraction",
+          "MQTT broker class generation",
+          "MQTT broker configuration",
+          "MessageBroker interface",
+          "SmartEnvironment orchestrator initialization",
+          "RTMonitor optional configuration",
+          "Simulation time stepping",
+          "Multi-step simulation execution"
+        ]
+      },
+      "model_3_sensor": {
+        "test_count": 9,
+        "validation_status": "valid",
+        "concepts_tested": [
+          "metadata extraction",
+          "MQTT broker configuration",
+          "broker connection interface",
+          "sensor entity creation",
+          "entity-broker binding",
+          "float attributes",
+          "SmartEnvironment orchestrator",
+          "simulation step execution",
+          "automation registry"
+        ]
+      },
+      "model_4_automation": {
+        "test_count": 10,
+        "validation_status": "valid",
+        "concepts_tested": [
+          "MQTT broker configuration",
+          "sensor entity initialization",
+          "actuator entity initialization",
+          "automation rule initialization",
+          "numeric condition evaluation (true case)",
+          "numeric condition evaluation (false case)",
+          "boolean action execution",
+          "automation execution flow",
+          "smart environment orchestration",
+          "simulation step execution"
+        ]
+      },
+      "model_5_auth_broker": {
+        "test_count": 9,
+        "validation_status": "valid",
+        "concepts_tested": [
+          "AMQP broker configuration",
+          "Redis broker configuration",
+          "plain authentication",
+          "API key authentication",
+          "entity with broker binding",
+          "entity typed attributes",
+          "broker connection interface",
+          "smart environment orchestrator",
+          "metadata constants"
+        ]
+      },
+      "model_6_generators": {
+        "test_count": 10,
+        "validation_status": "valid",
+        "concepts_tested": [
+          "Gaussian generator",
+          "Noise wrapper",
+          "Sinus generator",
+          "Sawtooth generator",
+          "Linear generator",
+          "Entity initialization with generators",
+          "Automation condition evaluation",
+          "Automation action execution",
+          "Generator updates during step",
+          "Automation execution during step"
+        ]
+      },
+      "model_7_complex_conditions": {
+        "test_count": 9,
+        "validation_status": "valid",
+        "concepts_tested": [
+          "SmartEnvironment initialization",
+          "Gaussian value generators",
+          "Compound AND conditions",
+          "Boolean conditions",
+          "Multiple actions per automation",
+          "Continuous automation behavior",
+          "Automation after dependencies",
+          "Entity attribute modification",
+          "Simulation step with generators"
+        ]
+      },
+      "model_8_full_system": {
+        "test_count": 10,
+        "validation_status": "valid",
+        "concepts_tested": [
+          "MQTT broker configuration",
+          "AMQP broker configuration",
+          "RTMonitor setup",
+          "Sensor with generators and noise",
+          "Multiple generator types",
+          "Actuator entities",
+          "Continuous automation",
+          "CheckOnce automation with delay",
+          "Automation orchestration dependencies",
+          "SmartEnvironment initialization and step execution"
+        ]
+      }
+    }
+  },
+  "dockerfiles_generated": 8
+}

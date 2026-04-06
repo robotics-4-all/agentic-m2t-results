@@ -1,0 +1,47 @@
+{%- macro render_statement(stmt) -%}
+{%- if classname(stmt) == 'Assignment' -%}
+{{ render_assignment(stmt) }}
+{%- elif classname(stmt) == 'Calculation' -%}
+{{ render_calculation(stmt) }}
+{%- endif -%}
+{%- endmacro -%}
+
+{%- macro render_assignment(assign) -%}
+variables['{{ assign.name }}'] = {{ render_expression(assign.expression) }}
+{%- endmacro -%}
+
+{%- macro render_calculation(calc) -%}
+print({{ render_expression(calc.expression) }})
+{%- endmacro -%}
+
+{%- macro render_expression(expr) -%}
+{{ render_term(expr.left) }}{% for i in range(expr.op | length) %} {{ expr.op[i] }} {{ render_term(expr.right[i]) }}{% endfor -%}
+{%- endmacro -%}
+
+{%- macro render_term(term) -%}
+{{ render_factor(term.left) }}{% for i in range(term.op | length) %} {{ term.op[i] }} {{ render_factor(term.right[i]) }}{% endfor -%}
+{%- endmacro -%}
+
+{%- macro render_factor(factor) -%}
+{%- if classname(factor) == 'Number' -%}
+{{ render_number(factor) }}
+{%- elif classname(factor) == 'Variable' -%}
+{{ render_variable(factor) }}
+{%- elif classname(factor) == 'Expression' -%}
+({{ render_expression(factor) }})
+{%- elif classname(factor) == 'UnaryOp' -%}
+{{ render_unaryop(factor) }}
+{%- endif -%}
+{%- endmacro -%}
+
+{%- macro render_number(num) -%}
+{{ num.value }}
+{%- endmacro -%}
+
+{%- macro render_variable(var) -%}
+variables['{{ var.name }}']
+{%- endmacro -%}
+
+{%- macro render_unaryop(unary) -%}
+{{ unary.op }}{{ render_factor(unary.value) }}
+{%- endmacro -%}

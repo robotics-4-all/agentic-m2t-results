@@ -1,0 +1,35 @@
+Metadata
+    name: SecureBrokers
+    version: "2.0"
+    author: "Bob"
+    email: "bob@example.com"
+    description: "Demonstrates multiple brokers with authentication"
+end
+
+Broker<AMQP> amqpBroker
+    host: "amqp.example.com"
+    port: 5672
+    vhost: "/production"
+    topicExchange: "sensors"
+    auth:
+        username: "admin"
+        password: "secret123"
+end
+
+Broker<Redis> redisBroker
+    host: "redis.example.com"
+    port: 6379
+    db: 0
+    ssl: true
+    auth:
+        key: "redis-api-key-abc"
+end
+
+Entity doorSensor
+    type: sensor
+    topic: "home/door"
+    broker: amqpBroker
+    attributes:
+        - is_open : bool
+        - last_opened : str
+end

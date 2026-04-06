@@ -1,0 +1,6 @@
+// Simple arithmetic calculations
+calc 2 + 3
+calc 10 - 5
+calc 4 * 6
+calc 20 / 4
+calc 17 % 5

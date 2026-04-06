@@ -1,0 +1,174 @@
+Metadata
+    name: FullSmartHome
+    version: "3.0"
+    author: "Diana"
+    email: "diana@smarthome.io"
+    description: "Full smart home with RTMonitor and multiple brokers"
+end
+
+RTMonitor
+    broker: mqttMain
+    namespace: "monitoring"
+    eventTopic: "home/events"
+    logsTopic: "home/logs"
+end
+
+Broker<MQTT> mqttMain
+    host: "mqtt.local"
+    port: 8883
+    ssl: true
+    basePath: "home"
+    auth:
+        username: "homeuser"
+        password: "h0m3p@ss"
+end
+
+Broker<AMQP> amqpAnalytics
+    host: "analytics.local"
+    port: 5672
+    vhost: "/analytics"
+    topicExchange: "sensor_data"
+    rpcExchange: "commands"
+    auth:
+        username: "analytics"
+        password: "analyticspw"
+end
+
+Entity outdoorTemp
+    type: sensor
+    topic: "home/outdoor/temperature"
+    broker: mqttMain
+    freq: 30
+    description: "Outdoor temperature and humidity sensor"
+    attributes:
+        - outdoor_temp : float -> gaussian(18.0, 45.0, 4.0) with noise gaussian(0.0, 0.2)
+        - outdoor_humidity : float -> saw(30.0, 95.0, 1.0)
+end
+
+Entity indoorClimate
+    type: sensor
+    topic: "home/indoor/climate"
+    broker: mqttMain
+    freq: 10
+    attributes:
+        - indoor_temp : float -> gaussian(22.0, 30.0, 1.5)
+        - indoor_humidity : float -> constant(50.0)
+        - co2 : int -> linear(400, 5)
+end
+
+Entity powerMeter
+    type: sensor
+    topic: "home/energy/meter"
+    broker: amqpAnalytics
+    freq: 60
+    attributes:
+        - consumption : float -> saw(0.5, 8.0, 0.1)
+        - voltage : float -> gaussian(230.0, 250.0, 2.0)
+end
+
+Entity securityCam
+    type: sensor
+    topic: "home/security/camera"
+    broker: mqttMain
+    attributes:
+        - motion_detected : bool
+        - person_count : int
+end
+
+Entity hvacUnit
+    type: actuator
+    topic: "home/hvac/main"
+    broker: mqttMain
+    attributes:
+        - hvac_power : bool
+        - target_temp : int
+        - hvac_mode : str
+        - fan_speed : int
+end
+
+Entity smartBlinds
+    type: actuator
+    topic: "home/living/blinds"
+    broker: mqttMain
+    attributes:
+        - blind_position : int
+end
+
+Entity alarmPanel
+    type: actuator
+    topic: "home/security/alarm"
+    broker: mqttMain
+    attributes:
+        - armed : bool
+        - siren : bool
+end
+
+Automation climateControl
+    condition:
+        indoorClimate.indoor_temp > 25.0 AND outdoorTemp.outdoor_temp > 20.0
+    actions:
+        - hvacUnit.hvac_power : true
+        - hvacUnit.target_temp : 22
+        - hvacUnit.fan_speed : 2
+    enabled: true
+    continuous: true
+    freq: 30
+    description: "Climate control based on indoor and outdoor temperature"
+end
+
+Automation ventilation
+    condition:
+        indoorClimate.co2 > 800
+    actions:
+        - hvacUnit.hvac_mode : "ventilate"
+    enabled: true
+    continuous: true
+    description: "Ventilate when CO2 is high"
+end
+
+Automation energySaver
+    condition:
+        powerMeter.consumption > 6.0 AND hvacUnit.fan_speed > 1
+    actions:
+        - hvacUnit.fan_speed : 1
+        - smartBlinds.blind_position : 50
+    enabled: true
+    description: "Reduce consumption when power draw is high"
+    after:
+        - climateControl
+end
+
+Automation securityArm
+    condition:
+        securityCam.motion_detected is false
+    actions:
+        - alarmPanel.armed : true
+    enabled: true
+    delay: 300.0
+    checkOnce: true
+    description: "Arm alarm after no motion for 5 minutes"
+end
+
+Automation intruderAlert
+    condition:
+        securityCam.motion_detected is true AND alarmPanel.armed is true
+    actions:
+        - alarmPanel.siren : true
+    enabled: true
+    description: "Trigger siren on motion while armed"
+    after:
+        - securityArm
+end
+
+Automation morningRoutine
+    condition:
+        outdoorTemp.outdoor_temp > 10.0
+    actions:
+        - smartBlinds.blind_position : 0
+        - hvacUnit.hvac_power : false
+    enabled: true
+    checkOnce: true
+    starts:
+        - climateControl
+    description: "Open blinds and let in fresh air in the morning"
+end
